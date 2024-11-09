@@ -20,7 +20,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    game(word, word_len);
+    while (game(word, word_len)) {
+        (void)0;
+    }
 
     return 0;
 }

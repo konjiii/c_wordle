@@ -6,6 +6,6 @@
 #include <signal.h>
 #include <string.h>
 
-void game(char *word, int word_len);
+int game(char *word, int word_len);
 
 #endif
