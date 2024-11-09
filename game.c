@@ -1,4 +1,5 @@
 #include "game.h"
+#include "wordapi.h"
 #include <ctype.h>
 #include <ncurses.h>
 #include <signal.h>
@@ -13,9 +14,9 @@ char *LOGO[42] = {
     "   \\_/\\_/  \\___/|_| \\_\\____/|_____|_____|",
 };
 
-int DONE = FALSE;
+int DONE = 0;
 int CURR_GUESS = 0;
-int RESIZE = FALSE;
+int RESIZE = 0;
 char *RESTART_Q = "Restart or Quit?(r/q)";
 
 void init_ncurses(void);
@@ -29,7 +30,8 @@ int check_guess(char *word, int word_len, char used[6][word_len + 1],
 int count(char *word, char chr, int beg, int end);
 
 int game(char *word, int word_len) {
-    DONE = FALSE;
+    DONE = 0;
+    word = "slash";
     char used[6][word_len + 1];
     int used_colors[6][word_len];
     init_used(word_len, used, used_colors);
@@ -47,9 +49,9 @@ int game(char *word, int word_len) {
     init_pair(3, COLOR_GREEN, COLOR_BLACK);
 
     // game loop
-    while (TRUE) {
+    while (1) {
         CURR_GUESS = 0;
-        RESIZE = FALSE;
+        RESIZE = 0;
         int maxy, maxx;
         getmaxyx(stdscr, maxy, maxx);
 
@@ -64,7 +66,7 @@ int game(char *word, int word_len) {
         hline('_', maxx);
 
         // input loop
-        while (true) {
+        while (1) {
             if (RESIZE) {
                 endwin();
                 init_ncurses();
@@ -92,12 +94,12 @@ int game(char *word, int word_len) {
                 if (!isalpha(answ))
                     continue;
 
-                answ = toupper(answ);
+                answ = tolower(answ);
 
-                if (answ == 'Q') {
+                if (answ == 'q') {
                     endwin();
                     return 0;
-                } else if (answ == 'R') {
+                } else if (answ == 'r') {
                     return 1;
                 }
             }
@@ -106,7 +108,8 @@ int game(char *word, int word_len) {
             int input = getch();
             if (input == ERR) {
                 continue;
-            } else if (input == 10 && strlen(used[CURR_GUESS]) == word_len) {
+            } else if (input == 10 && strlen(used[CURR_GUESS]) == word_len &&
+                       check_word(used[CURR_GUESS])) {
                 DONE = check_guess(word, word_len, used, used_colors);
                 CURR_GUESS += 1;
                 continue;
@@ -119,7 +122,7 @@ int game(char *word, int word_len) {
                 continue;
             }
 
-            input = toupper(input);
+            input = tolower(input);
 
             used[CURR_GUESS][strlen(used[CURR_GUESS])] = input;
         }
@@ -133,8 +136,8 @@ void init_ncurses(void) {
     initscr();
     cbreak();
     noecho();
-    keypad(stdscr, TRUE);
-    nodelay(stdscr, TRUE);
+    keypad(stdscr, 1);
+    nodelay(stdscr, 1);
 }
 
 void init_used(int word_len, char used[6][word_len + 1],
@@ -148,7 +151,7 @@ void init_used(int word_len, char used[6][word_len + 1],
             used_colors[i][j] = 0;
 }
 
-void handle_resize(int sig) { RESIZE = TRUE; }
+void handle_resize(int sig) { RESIZE = 1; }
 
 void print_guesses(int maxx, int word_len, char used[6][word_len + 1],
                    int used_colors[6][word_len]) {
@@ -159,7 +162,7 @@ void print_guesses(int maxx, int word_len, char used[6][word_len + 1],
             if (used[i][j] == '\0')
                 break;
             attron(COLOR_PAIR(used_colors[i][j]));
-            addch(used[i][j]);
+            addch(toupper(used[i][j]));
             attroff(COLOR_PAIR(used_colors[i][j]));
         }
     }
@@ -182,8 +185,10 @@ int check_guess(char *word, int word_len, char used[6][word_len + 1],
         return 1;
 
     for (int i = 0; i < word_len; i++) {
+        if (gotten[i] != '\0')
+            continue;
         if (count(used[CURR_GUESS], used[CURR_GUESS][i], 0, i) +
-                count(gotten, used[CURR_GUESS][i], 0, word_len) <
+                count(gotten, used[CURR_GUESS][i], i, word_len) <
             count(word, used[CURR_GUESS][i], 0, word_len)) {
             used_colors[CURR_GUESS][i] = 1;
         }

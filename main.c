@@ -1,5 +1,5 @@
 #include "game.h"
-#include "randomword.h"
+#include "wordapi.h"
 #include <stdio.h>
 #include <stdlib.h>
 
