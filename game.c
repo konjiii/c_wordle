@@ -1,5 +1,5 @@
 #include "game.h"
-#include "wordapi.h"
+#include "dictionary.h"
 #include <ctype.h>
 #include <ncurses.h>
 #include <signal.h>
@@ -31,7 +31,6 @@ int count(char *word, char chr, int beg, int end);
 
 int game(char *word, int word_len) {
     DONE = 0;
-    word = "slash";
     char used[6][word_len + 1];
     int used_colors[6][word_len];
     init_used(word_len, used, used_colors);

@@ -1,9 +1,14 @@
+#include "dictionary.h"
 #include "game.h"
-#include "wordapi.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
+    // download the whole dictionary from the api
+    if (get_dict() == 1) {
+        return 1;
+    }
+
     int word_len = 5;
 
     if (argc > 1) {
@@ -16,9 +21,7 @@ int main(int argc, char *argv[]) {
     }
 
     char word[word_len + 1];
-    if (get_word(word, word_len) == 1) {
-        return 1;
-    }
+    get_word(word, word_len);
 
     while (game(word, word_len)) {
         get_word(word, word_len);
