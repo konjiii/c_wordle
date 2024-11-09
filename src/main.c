@@ -21,10 +21,12 @@ int main(int argc, char *argv[]) {
     }
 
     char word[word_len + 1];
-    get_word(word, word_len);
+    if (get_word(word, word_len))
+        return 1;
 
     while (game(word, word_len)) {
-        get_word(word, word_len);
+        if (get_word(word, word_len))
+            return 1;
     }
 
     return 0;

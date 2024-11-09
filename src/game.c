@@ -103,15 +103,20 @@ int game(char *word, size_t word_len) {
                 }
             }
 
-            // handle input
             int input = getch();
             if (input == ERR) {
                 continue;
-            } else if (input == 10 && strlen(used[CURR_GUESS]) == word_len &&
-                       check_word(used[CURR_GUESS])) {
-                DONE = check_guess(word, word_len, used, used_colors);
-                CURR_GUESS += 1;
-                continue;
+            } else if (input == 10 && strlen(used[CURR_GUESS]) == word_len) {
+                switch (check_word(used[CURR_GUESS])) {
+                case -1:
+                    return 0;
+                case 1:
+                    DONE = check_guess(word, word_len, used, used_colors);
+                    CURR_GUESS += 1;
+                    continue;
+                case 0:
+                    continue;
+                }
             } else if (input == 263 && strlen(used[CURR_GUESS]) > 0) {
                 used[CURR_GUESS][strlen(used[CURR_GUESS]) - 1] = '\0';
                 deleteln();
@@ -136,7 +141,7 @@ void init_ncurses(void) {
     cbreak();
     noecho();
     keypad(stdscr, 1);
-    nodelay(stdscr, 1);
+    timeout(1000);
 }
 
 void init_used(int word_len, char used[6][word_len + 1],

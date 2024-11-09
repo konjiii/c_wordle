@@ -1,17 +1,39 @@
 #include "dictionary.h"
 #include <curl/curl.h>
+#include <libgen.h>
+#include <linux/limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 char **DICT = NULL;
 
 size_t write_data(char *ptr, size_t size, size_t nmemb, FILE *output);
 
 int get_dict() {
+    // check if dict is already downloaded
+    char path[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (len == -1) {
+        perror("readlink");
+        return 1;
+    }
+    path[len] = '\0';
+    char *dir = dirname(path);
+    char filename[PATH_MAX];
+    sprintf(filename, "%s%s", dir, "/dict");
+    if (access(filename, F_OK) == 0) {
+        return 0;
+    }
+
     CURL *curl;
     CURLcode res;
-    FILE *output = fopen("dict", "w");
+    FILE *output = fopen(filename, "w");
+    if (output == NULL) {
+        fprintf(stderr, "failed to open file 'dict'\n");
+        return 1;
+    }
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
@@ -56,9 +78,35 @@ size_t write_data(char *ptr, size_t size, size_t nmemb, FILE *output) {
     return total_size;
 }
 
-void get_word(char *word, size_t word_len) {
-    FILE *dict = fopen("dict", "r");
-    FILE *tmp = fopen("tmp", "w+");
+int get_word(char *word, size_t word_len) {
+    // get local directory
+    char path[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (len == -1) {
+        perror("readlink");
+        return 1;
+    }
+    path[len] = '\0';
+    char *dir = dirname(path);
+    char filename[PATH_MAX];
+
+    sprintf(filename, "%s%s", dir, "/dict");
+    FILE *dict = fopen(filename, "r");
+
+    sprintf(filename, "%s%s", dir, "/tmp");
+    FILE *tmp = fopen(filename, "w+");
+
+    if (dict == NULL) {
+        fprintf(stderr, "failed to open file 'dict'\n");
+        fclose(tmp);
+        remove(filename);
+        return 1;
+    }
+    if (tmp == NULL) {
+        fprintf(stderr, "failed to open file 'tmp'\n");
+        fclose(dict);
+        return 1;
+    }
 
     char dict_word[17];
 
@@ -70,9 +118,14 @@ void get_word(char *word, size_t word_len) {
         }
     }
 
-    fclose(dict);
-
     srand(time(NULL));
+    if (counter == 0) {
+        fclose(tmp);
+        fclose(dict);
+        remove(filename);
+        fprintf(stderr, "something went wrong with the dictionary\n");
+        return 1;
+    }
     int rand_idx = rand() % counter;
 
     rewind(tmp);
@@ -82,13 +135,30 @@ void get_word(char *word, size_t word_len) {
     }
 
     fclose(tmp);
-    remove("tmp");
+    remove(filename);
 
     strcpy(word, dict_word);
+    return 0;
 }
 
 int check_word(char *word) {
-    FILE *dict = fopen("dict", "r");
+    // get local directory
+    char path[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (len == -1) {
+        perror("readlink");
+        return 1;
+    }
+    path[len] = '\0';
+    char *dir = dirname(path);
+    char filename[PATH_MAX];
+
+    sprintf(filename, "%s%s", dir, "/dict");
+    FILE *dict = fopen(filename, "r");
+    if (dict == NULL) {
+        fprintf(stderr, "failed to open file 'dict'\n");
+        return -1;
+    }
 
     char dict_word[17];
 

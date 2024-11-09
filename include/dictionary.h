@@ -3,7 +3,7 @@
 #include <curl/curl.h>
 
 int get_dict();
-void get_word(char *word, size_t word_len);
+int get_word(char *word, size_t word_len);
 int check_word(char *word);
 
 #endif
