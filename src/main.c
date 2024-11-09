@@ -9,14 +9,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int word_len = 5;
+    size_t word_len = 5;
 
     if (argc > 1) {
         word_len = atoi(argv[1]);
     }
 
     if (word_len < 2 || word_len > 15) {
-        fprintf(stderr, "A word of length %i does not exist\n", word_len);
+        fprintf(stderr, "A word of length %zu does not exist\n", word_len);
         return 1;
     }
 

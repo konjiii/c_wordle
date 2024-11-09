@@ -29,7 +29,7 @@ int check_guess(char *word, int word_len, char used[6][word_len + 1],
                 int used_colors[6][word_len]);
 int count(char *word, char chr, int beg, int end);
 
-int game(char *word, int word_len) {
+int game(char *word, size_t word_len) {
     DONE = 0;
     char used[6][word_len + 1];
     int used_colors[6][word_len];
@@ -51,7 +51,7 @@ int game(char *word, int word_len) {
     while (1) {
         CURR_GUESS = 0;
         RESIZE = 0;
-        int maxy, maxx;
+        int maxy __attribute__((unused)), maxx;
         getmaxyx(stdscr, maxy, maxx);
 
         // print logo
@@ -150,7 +150,7 @@ void init_used(int word_len, char used[6][word_len + 1],
             used_colors[i][j] = 0;
 }
 
-void handle_resize(int sig) { RESIZE = 1; }
+void handle_resize(int sig __attribute__((unused))) { RESIZE = 1; }
 
 void print_guesses(int maxx, int word_len, char used[6][word_len + 1],
                    int used_colors[6][word_len]) {
@@ -180,7 +180,7 @@ int check_guess(char *word, int word_len, char used[6][word_len + 1],
         }
     }
 
-    if (strlen(gotten) == word_len)
+    if (strlen(gotten) == (size_t)word_len)
         return 1;
 
     for (int i = 0; i < word_len; i++) {

@@ -44,7 +44,7 @@ int get_dict() {
 size_t write_data(char *ptr, size_t size, size_t nmemb, FILE *output) {
     size_t total_size = size * nmemb;
 
-    for (int i = 2; i < nmemb; i++) {
+    for (unsigned int i = 2; i < nmemb; i++) {
         if (ptr[i] == '"') {
             fprintf(output, "\n");
             i += 2;
@@ -56,7 +56,7 @@ size_t write_data(char *ptr, size_t size, size_t nmemb, FILE *output) {
     return total_size;
 }
 
-void get_word(char *word, int word_len) {
+void get_word(char *word, size_t word_len) {
     FILE *dict = fopen("dict", "r");
     FILE *tmp = fopen("tmp", "w+");
 
