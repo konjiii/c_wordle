@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (game(word, word_len)) {
-        (void)0;
+        get_word(word, word_len);
     }
 
     return 0;
